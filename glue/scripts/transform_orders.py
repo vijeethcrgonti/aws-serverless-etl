@@ -11,7 +11,7 @@ from datetime import datetime
 
 from awsglue.context import GlueContext
 from awsglue.job import Job
-from awsglue.transforms import *
+from awsglue.transforms import ApplyMapping
 from awsglue.utils import getResolvedOptions
 from pyspark.context import SparkContext
 from pyspark.sql import DataFrame
