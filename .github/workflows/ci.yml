@@ -28,6 +28,8 @@ jobs:
           AWS_ACCESS_KEY_ID: testing
           AWS_SECRET_ACCESS_KEY: testing
           GLUE_JOB_NAME: test-glue-job
+          SNS_TOPIC_ARN: arn:aws:sns:us-east-1:000000000000:test-topic
+          PROCESSED_BUCKET: test-processed-bucket
       - name: Upload coverage
         uses: codecov/codecov-action@v4
         with:
