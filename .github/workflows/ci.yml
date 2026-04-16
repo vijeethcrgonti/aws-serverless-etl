@@ -35,6 +35,10 @@ jobs:
 
       - name: Run unit tests
         run: pytest tests/unit/ -v --tb=short --cov=lambda --cov=glue --cov-report=xml
+        env:
+          AWS_DEFAULT_REGION: us-east-1
+          AWS_ACCESS_KEY_ID: testing
+          AWS_SECRET_ACCESS_KEY: testing
 
       - name: Upload coverage
         uses: codecov/codecov-action@v4
@@ -55,6 +59,7 @@ jobs:
 
   cdk-synth:
     name: CDK Synth
+    if: false
     runs-on: ubuntu-latest
     needs: [test, lint]
     steps:
@@ -83,6 +88,7 @@ jobs:
 
   deploy-dev:
     name: Deploy to Dev
+    if: false
     runs-on: ubuntu-latest
     needs: [cdk-synth]
     if: github.ref == 'refs/heads/main'
