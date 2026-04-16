@@ -14,7 +14,8 @@ class StorageStack(cdk.Stack):
         super().__init__(scope, construct_id, **kwargs)
 
         self.raw_bucket = s3.Bucket(
-            self, "RawBucket",
+            self,
+            "RawBucket",
             bucket_name=f"etl-raw-{stage}-{self.account}",
             versioned=True,
             encryption=s3.BucketEncryption.S3_MANAGED,
@@ -35,7 +36,8 @@ class StorageStack(cdk.Stack):
         )
 
         self.processed_bucket = s3.Bucket(
-            self, "ProcessedBucket",
+            self,
+            "ProcessedBucket",
             bucket_name=f"etl-processed-{stage}-{self.account}",
             versioned=True,
             encryption=s3.BucketEncryption.S3_MANAGED,
@@ -44,7 +46,8 @@ class StorageStack(cdk.Stack):
         )
 
         self.scripts_bucket = s3.Bucket(
-            self, "ScriptsBucket",
+            self,
+            "ScriptsBucket",
             bucket_name=f"etl-glue-scripts-{stage}-{self.account}",
             encryption=s3.BucketEncryption.S3_MANAGED,
             block_public_access=s3.BlockPublicAccess.BLOCK_ALL,
@@ -52,7 +55,8 @@ class StorageStack(cdk.Stack):
         )
 
         self.archive_bucket = s3.Bucket(
-            self, "ArchiveBucket",
+            self,
+            "ArchiveBucket",
             bucket_name=f"etl-archive-{stage}-{self.account}",
             encryption=s3.BucketEncryption.S3_MANAGED,
             block_public_access=s3.BlockPublicAccess.BLOCK_ALL,
@@ -72,5 +76,7 @@ class StorageStack(cdk.Stack):
 
         # Outputs
         cdk.CfnOutput(self, "RawBucketName", value=self.raw_bucket.bucket_name)
-        cdk.CfnOutput(self, "ProcessedBucketName", value=self.processed_bucket.bucket_name)
+        cdk.CfnOutput(
+            self, "ProcessedBucketName", value=self.processed_bucket.bucket_name
+        )
         cdk.CfnOutput(self, "ScriptsBucketName", value=self.scripts_bucket.bucket_name)

@@ -96,7 +96,9 @@ def validate_load(cursor, staging_table: str, target_table: str) -> bool:
     cursor.execute(f"SELECT COUNT(*) FROM {staging_table};")
     staging_count = cursor.fetchone()[0]
 
-    cursor.execute(f"SELECT COUNT(*) FROM {target_table} WHERE _loaded_at >= GETDATE() - INTERVAL '1 hour';")
+    cursor.execute(
+        f"SELECT COUNT(*) FROM {target_table} WHERE _loaded_at >= GETDATE() - INTERVAL '1 hour';"
+    )
     target_count = cursor.fetchone()[0]
 
     logger.info(f"Staging rows: {staging_count} | Recent target rows: {target_count}")
@@ -119,7 +121,9 @@ def lambda_handler(event, context):
     source_key = detail.get("arguments", {}).get("--source_key", "")
 
     if state != "SUCCEEDED":
-        logger.warning(f"Glue job {job_run_id} ended with state {state} — skipping load")
+        logger.warning(
+            f"Glue job {job_run_id} ended with state {state} — skipping load"
+        )
         return {"statusCode": 200, "body": "Skipped — job did not succeed"}
 
     if source_type not in SOURCE_TABLE_MAP:
@@ -137,7 +141,9 @@ def lambda_handler(event, context):
     try:
         truncate_staging(cursor, STAGING_TABLE_MAP[source_type])
         copy_to_staging(cursor, s3_path, STAGING_TABLE_MAP[source_type])
-        valid = validate_load(cursor, STAGING_TABLE_MAP[source_type], SOURCE_TABLE_MAP[source_type])
+        valid = validate_load(
+            cursor, STAGING_TABLE_MAP[source_type], SOURCE_TABLE_MAP[source_type]
+        )
 
         if not valid:
             conn.rollback()

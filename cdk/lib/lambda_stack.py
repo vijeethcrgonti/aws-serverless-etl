@@ -33,7 +33,8 @@ class LambdaStack(cdk.Stack):
         super().__init__(scope, construct_id, **kwargs)
 
         self.alert_topic = sns.Topic(
-            self, "AlertTopic",
+            self,
+            "AlertTopic",
             topic_name=f"etl-alerts-{stage}",
             display_name="ETL Pipeline Alerts",
         )
@@ -41,7 +42,8 @@ class LambdaStack(cdk.Stack):
         # ── Shared Lambda Layer ────────────────────────────────────────────────
 
         shared_layer = lambda_.LayerVersion(
-            self, "SharedLayer",
+            self,
+            "SharedLayer",
             code=lambda_.Code.from_asset("../lambda/layer"),
             compatible_runtimes=[lambda_.Runtime.PYTHON_3_12],
             description="Shared utilities: boto3, redshift_connector",
@@ -50,24 +52,34 @@ class LambdaStack(cdk.Stack):
         # ── Trigger Lambda ─────────────────────────────────────────────────────
 
         trigger_role = iam.Role(
-            self, "TriggerRole",
+            self,
+            "TriggerRole",
             assumed_by=iam.ServicePrincipal("lambda.amazonaws.com"),
             managed_policies=[
-                iam.ManagedPolicy.from_aws_managed_policy_name("service-role/AWSLambdaBasicExecutionRole"),
+                iam.ManagedPolicy.from_aws_managed_policy_name(
+                    "service-role/AWSLambdaBasicExecutionRole"
+                ),
             ],
         )
         raw_bucket.grant_read(trigger_role)
-        trigger_role.add_to_policy(iam.PolicyStatement(
-            actions=["glue:StartJobRun"],
-            resources=[f"arn:aws:glue:{self.region}:{self.account}:job/{glue_job_name}"],
-        ))
-        trigger_role.add_to_policy(iam.PolicyStatement(
-            actions=["sns:Publish"],
-            resources=[self.alert_topic.topic_arn],
-        ))
+        trigger_role.add_to_policy(
+            iam.PolicyStatement(
+                actions=["glue:StartJobRun"],
+                resources=[
+                    f"arn:aws:glue:{self.region}:{self.account}:job/{glue_job_name}"
+                ],
+            )
+        )
+        trigger_role.add_to_policy(
+            iam.PolicyStatement(
+                actions=["sns:Publish"],
+                resources=[self.alert_topic.topic_arn],
+            )
+        )
 
         self.trigger_fn = lambda_.Function(
-            self, "TriggerFunction",
+            self,
+            "TriggerFunction",
             function_name=f"etl-trigger-{stage}",
             runtime=lambda_.Runtime.PYTHON_3_12,
             handler="handler.lambda_handler",
@@ -95,21 +107,27 @@ class LambdaStack(cdk.Stack):
         # ── Transformer Lambda ─────────────────────────────────────────────────
 
         transformer_role = iam.Role(
-            self, "TransformerRole",
+            self,
+            "TransformerRole",
             assumed_by=iam.ServicePrincipal("lambda.amazonaws.com"),
             managed_policies=[
-                iam.ManagedPolicy.from_aws_managed_policy_name("service-role/AWSLambdaBasicExecutionRole"),
+                iam.ManagedPolicy.from_aws_managed_policy_name(
+                    "service-role/AWSLambdaBasicExecutionRole"
+                ),
             ],
         )
         processed_bucket.grant_read(transformer_role)
         redshift_secret.grant_read(transformer_role)
-        transformer_role.add_to_policy(iam.PolicyStatement(
-            actions=["sns:Publish"],
-            resources=[self.alert_topic.topic_arn],
-        ))
+        transformer_role.add_to_policy(
+            iam.PolicyStatement(
+                actions=["sns:Publish"],
+                resources=[self.alert_topic.topic_arn],
+            )
+        )
 
         self.transformer_fn = lambda_.Function(
-            self, "TransformerFunction",
+            self,
+            "TransformerFunction",
             function_name=f"etl-transformer-{stage}",
             runtime=lambda_.Runtime.PYTHON_3_12,
             handler="handler.lambda_handler",
@@ -129,7 +147,8 @@ class LambdaStack(cdk.Stack):
 
         # EventBridge: fire transformer when Glue job SUCCEEDS
         glue_success_rule = events.Rule(
-            self, "GlueSuccessRule",
+            self,
+            "GlueSuccessRule",
             event_pattern=events.EventPattern(
                 source=["aws.glue"],
                 detail_type=["Glue Job State Change"],
@@ -139,5 +158,7 @@ class LambdaStack(cdk.Stack):
         glue_success_rule.add_target(targets.LambdaFunction(self.transformer_fn))
 
         cdk.CfnOutput(self, "TriggerFunctionArn", value=self.trigger_fn.function_arn)
-        cdk.CfnOutput(self, "TransformerFunctionArn", value=self.transformer_fn.function_arn)
+        cdk.CfnOutput(
+            self, "TransformerFunctionArn", value=self.transformer_fn.function_arn
+        )
         cdk.CfnOutput(self, "AlertTopicArn", value=self.alert_topic.topic_arn)

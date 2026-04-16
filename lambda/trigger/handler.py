@@ -76,7 +76,9 @@ def trigger_glue_job(bucket: str, key: str, source: str) -> str:
         },
     )
     run_id = response["JobRunId"]
-    logger.info(f"Started Glue job {GLUE_JOB_NAME} run {run_id} for s3://{bucket}/{key}")
+    logger.info(
+        f"Started Glue job {GLUE_JOB_NAME} run {run_id} for s3://{bucket}/{key}"
+    )
     return run_id
 
 
@@ -101,7 +103,9 @@ def lambda_handler(event, context):
             msg = f"Validation failed for s3://{bucket}/{key}: {reason}"
             logger.warning(msg)
             send_alert("ETL Validation Failure", msg)
-            results.append({"key": key, "status": "validation_failed", "reason": reason})
+            results.append(
+                {"key": key, "status": "validation_failed", "reason": reason}
+            )
             continue
 
         source = classify_source(key)

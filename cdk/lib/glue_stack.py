@@ -28,11 +28,14 @@ class GlueStack(cdk.Stack):
         # ── IAM Role ───────────────────────────────────────────────────────────
 
         glue_role = iam.Role(
-            self, "GlueRole",
+            self,
+            "GlueRole",
             role_name=f"GlueETLRole-{stage}",
             assumed_by=iam.ServicePrincipal("glue.amazonaws.com"),
             managed_policies=[
-                iam.ManagedPolicy.from_aws_managed_policy_name("service-role/AWSGlueServiceRole"),
+                iam.ManagedPolicy.from_aws_managed_policy_name(
+                    "service-role/AWSGlueServiceRole"
+                ),
             ],
         )
         raw_bucket.grant_read(glue_role)
@@ -42,7 +45,8 @@ class GlueStack(cdk.Stack):
         # ── Data Catalog ───────────────────────────────────────────────────────
 
         database = glue.CfnDatabase(
-            self, "GlueDatabase",
+            self,
+            "GlueDatabase",
             catalog_id=self.account,
             database_input=glue.CfnDatabase.DatabaseInputProperty(
                 name=f"etl_catalog_{stage}",
@@ -55,7 +59,8 @@ class GlueStack(cdk.Stack):
         self.job_name = f"etl-transform-orders-{stage}"
 
         glue.CfnJob(
-            self, "TransformOrdersJob",
+            self,
+            "TransformOrdersJob",
             name=self.job_name,
             role=glue_role.role_arn,
             command=glue.CfnJob.JobCommandProperty(
@@ -82,7 +87,8 @@ class GlueStack(cdk.Stack):
         # ── Crawler ────────────────────────────────────────────────────────────
 
         glue.CfnCrawler(
-            self, "ProcessedCrawler",
+            self,
+            "ProcessedCrawler",
             name=f"etl-processed-crawler-{stage}",
             role=glue_role.role_arn,
             database_name=f"etl_catalog_{stage}",

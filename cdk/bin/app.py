@@ -27,7 +27,8 @@ network = NetworkStack(app, f"NetworkStack-{stage}", env=env, stage=stage)
 storage = StorageStack(app, f"StorageStack-{stage}", env=env, stage=stage)
 
 glue = GlueStack(
-    app, f"GlueStack-{stage}",
+    app,
+    f"GlueStack-{stage}",
     env=env,
     stage=stage,
     raw_bucket=storage.raw_bucket,
@@ -36,7 +37,8 @@ glue = GlueStack(
 )
 
 redshift = RedshiftStack(
-    app, f"RedshiftStack-{stage}",
+    app,
+    f"RedshiftStack-{stage}",
     env=env,
     stage=stage,
     vpc=network.vpc,
@@ -44,7 +46,8 @@ redshift = RedshiftStack(
 )
 
 lambda_stack = LambdaStack(
-    app, f"LambdaStack-{stage}",
+    app,
+    f"LambdaStack-{stage}",
     env=env,
     stage=stage,
     raw_bucket=storage.raw_bucket,
@@ -54,7 +57,8 @@ lambda_stack = LambdaStack(
 )
 
 monitoring = MonitoringStack(
-    app, f"MonitoringStack-{stage}",
+    app,
+    f"MonitoringStack-{stage}",
     env=env,
     stage=stage,
     lambda_trigger_fn=lambda_stack.trigger_fn,

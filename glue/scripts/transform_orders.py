@@ -44,18 +44,20 @@ job.init(args["JOB_NAME"], args)
 
 logger = glueContext.get_logger()
 
-ORDERS_SCHEMA = StructType([
-    StructField("order_id", StringType(), nullable=False),
-    StructField("customer_id", StringType(), nullable=False),
-    StructField("store_id", StringType(), nullable=True),
-    StructField("product_id", StringType(), nullable=True),
-    StructField("quantity", IntegerType(), nullable=True),
-    StructField("unit_price", DecimalType(10, 2), nullable=True),
-    StructField("order_amount", DecimalType(12, 2), nullable=True),
-    StructField("order_date", TimestampType(), nullable=True),
-    StructField("status", StringType(), nullable=True),
-    StructField("created_at", TimestampType(), nullable=True),
-])
+ORDERS_SCHEMA = StructType(
+    [
+        StructField("order_id", StringType(), nullable=False),
+        StructField("customer_id", StringType(), nullable=False),
+        StructField("store_id", StringType(), nullable=True),
+        StructField("product_id", StringType(), nullable=True),
+        StructField("quantity", IntegerType(), nullable=True),
+        StructField("unit_price", DecimalType(10, 2), nullable=True),
+        StructField("order_amount", DecimalType(12, 2), nullable=True),
+        StructField("order_date", TimestampType(), nullable=True),
+        StructField("status", StringType(), nullable=True),
+        StructField("created_at", TimestampType(), nullable=True),
+    ]
+)
 
 
 def read_raw(source_bucket: str, source_key: str, source_type: str) -> DataFrame:
@@ -93,6 +95,7 @@ def validate_schema(df: DataFrame) -> DataFrame:
 
 def deduplicate(df: DataFrame) -> DataFrame:
     from pyspark.sql.window import Window
+
     window = Window.partitionBy("order_id").orderBy(F.col("created_at").desc())
     return (
         df.withColumn("_rn", F.row_number().over(window))
@@ -103,9 +106,7 @@ def deduplicate(df: DataFrame) -> DataFrame:
 
 def mask_pii(df: DataFrame) -> DataFrame:
     hash_udf = F.udf(lambda v: hashlib.sha256(v.encode()).hexdigest() if v else None)
-    return (
-        df.withColumn("customer_id", hash_udf(F.col("customer_id")))
-    )
+    return df.withColumn("customer_id", hash_udf(F.col("customer_id")))
 
 
 def enrich(df: DataFrame) -> DataFrame:
@@ -124,8 +125,7 @@ def write_output(df: DataFrame, output_bucket: str, source_type: str):
     output_path = f"s3://{output_bucket}/processed/{source_type}"
     logger.info(f"Writing {df.count()} records to {output_path}")
     (
-        df.write
-        .mode("overwrite")
+        df.write.mode("overwrite")
         .partitionBy("order_year", "order_month", "order_day")
         .option("compression", "snappy")
         .parquet(output_path)

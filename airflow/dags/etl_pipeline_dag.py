@@ -10,8 +10,6 @@ from airflow import DAG
 from airflow.operators.python import PythonOperator, ShortCircuitOperator
 from airflow.providers.amazon.aws.operators.glue import GlueJobOperator
 from airflow.providers.amazon.aws.operators.glue_crawler import GlueCrawlerOperator
-from airflow.providers.amazon.aws.sensors.glue import GlueJobSensor
-from airflow.providers.amazon.aws.sensors.s3 import S3KeySensor
 
 import boto3
 
@@ -39,7 +37,9 @@ def check_raw_file_exists(**context) -> bool:
     resp = s3.list_objects_v2(Bucket=bucket, Prefix=prefix, MaxKeys=1)
     found = resp.get("KeyCount", 0) > 0
     if not found:
-        context["task_instance"].log.warning(f"No files found at s3://{bucket}/{prefix} — skipping run")
+        context["task_instance"].log.warning(
+            f"No files found at s3://{bucket}/{prefix} — skipping run"
+        )
     return found
 
 
@@ -47,12 +47,14 @@ def validate_processed_output(**context):
     date = context["params"].get("run_date") or context["ds"]
     s3 = boto3.client("s3")
     bucket = context["var"]["value"]["ETL_PROCESSED_BUCKET"]
-    prefix = f"processed/orders/"
+    prefix = "processed/orders/"
     resp = s3.list_objects_v2(Bucket=bucket, Prefix=prefix, MaxKeys=5)
     count = resp.get("KeyCount", 0)
     context["task_instance"].log.info(f"Processed output files found: {count}")
     if count == 0:
-        raise ValueError("No processed files found after Glue job — pipeline may have failed silently")
+        raise ValueError(
+            "No processed files found after Glue job — pipeline may have failed silently"
+        )
 
 
 with DAG(

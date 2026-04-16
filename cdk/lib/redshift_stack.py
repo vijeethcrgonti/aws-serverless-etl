@@ -29,7 +29,8 @@ class RedshiftStack(cdk.Stack):
         # ── Redshift IAM Role (for COPY from S3) ───────────────────────────────
 
         redshift_role = iam.Role(
-            self, "RedshiftS3Role",
+            self,
+            "RedshiftS3Role",
             role_name=f"RedshiftS3Role-{stage}",
             assumed_by=iam.ServicePrincipal("redshift.amazonaws.com"),
         )
@@ -38,7 +39,8 @@ class RedshiftStack(cdk.Stack):
         # ── Credentials Secret ─────────────────────────────────────────────────
 
         self.secret = secretsmanager.Secret(
-            self, "RedshiftSecret",
+            self,
+            "RedshiftSecret",
             secret_name=f"etl/redshift/{stage}",
             generate_secret_string=secretsmanager.SecretStringGenerator(
                 secret_string_template='{"username": "etl_admin"}',
@@ -51,7 +53,8 @@ class RedshiftStack(cdk.Stack):
         # ── Security Group ─────────────────────────────────────────────────────
 
         sg = ec2.SecurityGroup(
-            self, "RedshiftSG",
+            self,
+            "RedshiftSG",
             vpc=vpc,
             description="Redshift Serverless security group",
             allow_all_outbound=True,
@@ -65,18 +68,22 @@ class RedshiftStack(cdk.Stack):
         # ── Namespace ──────────────────────────────────────────────────────────
 
         namespace = redshift.CfnNamespace(
-            self, "Namespace",
+            self,
+            "Namespace",
             namespace_name=f"etl-namespace-{stage}",
             db_name="etl_db",
             admin_username="etl_admin",
-            admin_user_password=self.secret.secret_value_from_json("password").unsafe_unwrap(),
+            admin_user_password=self.secret.secret_value_from_json(
+                "password"
+            ).unsafe_unwrap(),
             iam_roles=[redshift_role.role_arn],
         )
 
         # ── Workgroup ──────────────────────────────────────────────────────────
 
         workgroup = redshift.CfnWorkgroup(
-            self, "Workgroup",
+            self,
+            "Workgroup",
             workgroup_name=f"etl-workgroup-{stage}",
             namespace_name=namespace.namespace_name,
             base_capacity=32,
