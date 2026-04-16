@@ -33,7 +33,7 @@ def check_raw_file_exists(**context) -> bool:
     _date = context["params"].get("run_date") or context["ds"]
     s3 = boto3.client("s3")
     bucket = context["var"]["value"]["ETL_RAW_BUCKET"]
-    prefix = f"orders/{date.replace('-', '/')}/"
+    prefix = f"orders/{_date.replace('-', '/')}/"
     resp = s3.list_objects_v2(Bucket=bucket, Prefix=prefix, MaxKeys=1)
     found = resp.get("KeyCount", 0) > 0
     if not found:
