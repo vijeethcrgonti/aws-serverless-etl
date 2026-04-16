@@ -113,7 +113,6 @@ def lambda_handler(event, context):
     logger.info(f"Event: {json.dumps(event)}")
 
     detail = event.get("detail", {})
-    job_name = detail.get("jobName", "")
     job_run_id = detail.get("jobRunId", "")
     state = detail.get("state", "")
     source_type = detail.get("arguments", {}).get("--source_type", "")
