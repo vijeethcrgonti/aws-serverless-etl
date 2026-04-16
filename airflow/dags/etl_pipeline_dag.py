@@ -30,7 +30,7 @@ AWS_CONN_ID = "aws_default"
 
 def check_raw_file_exists(**context) -> bool:
     """Short-circuit if no raw file landed for this date."""
-    date = context["params"].get("run_date") or context["ds"]
+    _date = context["params"].get("run_date") or context["ds"]
     s3 = boto3.client("s3")
     bucket = context["var"]["value"]["ETL_RAW_BUCKET"]
     prefix = f"orders/{date.replace('-', '/')}/"
@@ -44,7 +44,7 @@ def check_raw_file_exists(**context) -> bool:
 
 
 def validate_processed_output(**context):
-    date = context["params"].get("run_date") or context["ds"]
+    _date = context["params"].get("run_date") or context["ds"]
     s3 = boto3.client("s3")
     bucket = context["var"]["value"]["ETL_PROCESSED_BUCKET"]
     prefix = "processed/orders/"

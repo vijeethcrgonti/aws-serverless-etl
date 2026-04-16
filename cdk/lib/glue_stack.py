@@ -44,7 +44,7 @@ class GlueStack(cdk.Stack):
 
         # ── Data Catalog ───────────────────────────────────────────────────────
 
-        database = glue.CfnDatabase(
+        _database = glue.CfnDatabase(
             self,
             "GlueDatabase",
             catalog_id=self.account,
